@@ -70,6 +70,15 @@ module Dry
       end
 
       # @api private
+      def shutdown
+        components.each do |component|
+          stop(component)
+        rescue ComponentNotStartedError
+          next
+        end
+      end
+
+      # @api private
       def init(name_or_component)
         with_component(name_or_component) do |component|
           call(component) do

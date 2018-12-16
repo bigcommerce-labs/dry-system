@@ -2,9 +2,11 @@ RSpec.describe Dry::System::Container, '.boot' do
   subject(:system) { Test::App }
 
   let(:db) { spy(:db) }
+  let(:client) { spy(:client) }
 
   before do
     Test.const_set(:DB, db)
+    Test.const_set(:Client, client)
 
     module Test
       class App < Dry::System::Container
@@ -25,6 +27,22 @@ RSpec.describe Dry::System::Container, '.boot' do
 
           stop do
             db.close_connection
+          end
+        end
+
+        boot(:client) do
+          register(:client, Test::Client)
+
+          init do
+            client.establish_connection
+          end
+
+          start do
+            client.load
+          end
+
+          stop do
+            client.close_connection
           end
         end
       end
@@ -49,6 +67,17 @@ RSpec.describe Dry::System::Container, '.boot' do
     it 'calls stop function' do
       system.booter.(:db).stop
       expect(db).to have_received(:close_connection)
+    end
+  end
+
+  describe '#shutdown' do
+    it 'calls stop function for every component' do
+      system.booter.start(:db)
+      system.booter.start(:client)
+      system.booter.shutdown
+
+      expect(db).to have_received(:close_connection)
+      expect(client).to have_received(:close_connection)
     end
   end
 
