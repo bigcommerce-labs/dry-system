@@ -61,12 +61,25 @@ RSpec.describe Dry::System::Container, '.boot' do
       system.booter.(:db).start
       expect(db).to have_received(:load)
     end
+
+    it 'store booted component' do
+      system.booter.start(:db)
+      expect(system.booter.booted.map(&:identifier)).to include(:db)
+    end
   end
 
   describe '#stop' do
     it 'calls stop function' do
       system.booter.(:db).stop
       expect(db).to have_received(:close_connection)
+    end
+
+    it 'remove booted component' do
+      system.booter.start(:db)
+      expect(system.booter.booted).to_not be_empty
+
+      system.booter.stop(:db)
+      expect(system.booter.booted).to be_empty
     end
   end
 

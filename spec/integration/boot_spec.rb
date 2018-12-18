@@ -139,5 +139,19 @@ RSpec.describe Dry::System::Container, '.boot' do
       expect(db.established).to eq false
       expect(client.connected).to eq false
     end
+
+    it 'does not raise an exception if the component has not been started' do
+      setup_db
+      setup_client
+
+      db = system['db.conn']
+      system.shutdown!
+
+      expect {
+        system.shutdown!
+      }.to_not raise_error
+
+      expect(db.established).to eq false
+    end
   end
 end
