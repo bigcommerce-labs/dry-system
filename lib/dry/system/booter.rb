@@ -71,10 +71,8 @@ module Dry
 
       # @api private
       def shutdown
-        components.each do |component|
-          stop(component)
-        rescue ComponentNotStartedError
-          next
+        booted.each do |booted_component|
+          stop(booted_component)
         end
       end
 
