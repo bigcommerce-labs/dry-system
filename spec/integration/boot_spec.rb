@@ -128,30 +128,32 @@ RSpec.describe Dry::System::Container, '.boot' do
       }.to raise_error(Dry::System::ComponentNotStartedError)
     end
 
-    it 'allows container to shutdown' do
-      setup_db
-      setup_client
+    describe '#shutdown!' do
+      it 'allows container to stop all started components' do
+        setup_db
+        setup_client
 
-      db = system['db.conn']
-      client = system['client.conn']
-      system.shutdown!
-
-      expect(db.established).to eq false
-      expect(client.connected).to eq false
-    end
-
-    it 'does not raise an exception if the component has not been started' do
-      setup_db
-      setup_client
-
-      db = system['db.conn']
-      system.shutdown!
-
-      expect {
+        db = system['db.conn']
+        client = system['client.conn']
         system.shutdown!
-      }.to_not raise_error
 
-      expect(db.established).to eq false
+        expect(db.established).to eq false
+        expect(client.connected).to eq false
+      end
+
+      it 'skips components that has not been started' do
+        setup_db
+        setup_client
+
+        db = system['db.conn']
+        system.shutdown!
+
+        expect {
+          system.shutdown!
+        }.to_not raise_error
+
+        expect(db.established).to eq false
+      end
     end
   end
 end
